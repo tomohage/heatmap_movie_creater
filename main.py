@@ -74,7 +74,10 @@ if __name__ == "__main__":
     print u"##### FINISH CREATING HEATMAP IMAGE #####"
 
     current_dir_path = os.getcwd()
-    files = glob.glob(current_dir_path + '/images/*.png')
+    if os.name == 'nt':
+        files = glob.glob(current_dir_path + '¥¥images¥¥*.png')
+    else:
+        files = glob.glob(current_dir_path + '/images/*.png')
     start_file, ext = os.path.splitext(os.path.basename(files[0]))
     end_file, ext = os.path.splitext(os.path.basename(files[-1]))
     span = (float(end_file) - float(start_file)) / len(files)
@@ -141,4 +144,4 @@ if __name__ == "__main__":
     if is_saved_movie_no_sound != '1':
         os.remove('no_sound_' + output_file_name)
 
-    shutil.rmtree('images/')
+    shutil.rmtree('images')
