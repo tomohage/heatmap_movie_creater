@@ -73,11 +73,8 @@ if __name__ == "__main__":
     heatmap_creater.create_heatmap_images(recording_csv_path, heatmap_fps, window_size)
     print u"##### FINISH CREATING HEATMAP IMAGE #####"
 
-    current_dir_path = os.getcwd()
-    if os.name == 'nt':
-        files = glob.glob(current_dir_path + "¥¥images¥¥*.png")
-    else:
-        files = glob.glob(current_dir_path + '/images/*.png')
+
+    files = glob.glob("images/*.png")
     start_file, ext = os.path.splitext(os.path.basename(files[0]))
     end_file, ext = os.path.splitext(os.path.basename(files[-1]))
     span = (float(end_file) - float(start_file)) / len(files)

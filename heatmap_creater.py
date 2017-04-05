@@ -110,13 +110,9 @@ def create_heatmap_movie(csv_file_name, fps, window_size):
     print("finish creating movie file.")
 
 def create_heatmap_images(csv_file_name, fps, window_size):
-    current_dir_path = os.getcwd()
-    if os.name == 'nt':
-        validate_fps(current_dir_path + "¥¥" + csv_file_name, fps)
-        os.makedirs(current_dir_path + "¥¥images")
-    else:
-        validate_fps(current_dir_path + '/' + csv_file_name, fps)
-        os.makedirs(current_dir_path + "/images")
+
+    validate_fps(csv_file_name, fps)
+    os.makedirs("images")
     # fpsから時系列の時間間隔単位を取得
     unit_time = 1.0 / fps * 1000
 
@@ -135,10 +131,7 @@ def create_heatmap_images(csv_file_name, fps, window_size):
 
     count = 0
     time = 0
-    if os.name == 'nt':
-        csv_file = open(current_dir_path + "¥¥" + csv_file_name, 'rb')
-    else:
-        csv_file = open(current_dir_path + '/' + csv_file_name, 'rb')
+    csv_file = open(csv_file_name, 'rb')
     csv_reader = csv.reader(csv_file)
     for row in csv_reader:
         if row_num > _POSITION_DATA_ROW:
@@ -149,10 +142,7 @@ def create_heatmap_images(csv_file_name, fps, window_size):
     csv_file.close()
 
     # ヒートマップの連番画像を作成
-    if os.name == 'nt':
-        csv_file = open(current_dir_path + "¥¥" + csv_file_name, 'rb')
-    else:
-        csv_file = open(current_dir_path + '/' + csv_file_name, 'rb')
+    csv_file = open(csv_file_name, 'rb')
     csv_reader = csv.reader(csv_file)
     row_num = 1
     status = _TRIGGER_OFF_STATUS
@@ -230,10 +220,7 @@ def create_heatmap_images(csv_file_name, fps, window_size):
             print(str(now_time) + "[ms] complete")
             # 時系列の時間をファイル名にして画像ファイルを出力
             # ms単位で10桁でファイル名を設定
-            if os.name == 'nt':
-                img.save(current_dir_path + "¥¥images¥¥%010d.png" % int(now_time))
-            else:
-                img.save(current_dir_path + "/images/%010d.png" % int(now_time))
+            img.save("images/%010d.png" % int(now_time))
         row_num += 1
     csv_file.close()
 
