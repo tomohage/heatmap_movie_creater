@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     current_dir_path = os.getcwd()
     if os.name == 'nt':
-        files = glob.glob(current_dir_path + '¥¥images¥¥*.png')
+        files = glob.glob(current_dir_path + "¥¥images¥¥*.png")
     else:
         files = glob.glob(current_dir_path + '/images/*.png')
     start_file, ext = os.path.splitext(os.path.basename(files[0]))

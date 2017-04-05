@@ -112,7 +112,7 @@ def create_heatmap_movie(csv_file_name, fps, window_size):
 def create_heatmap_images(csv_file_name, fps, window_size):
     current_dir_path = os.getcwd()
     if os.name == 'nt':
-        validate_fps(current_dir_path + '¥¥' + csv_file_name, fps)
+        validate_fps(current_dir_path + "¥¥" + csv_file_name, fps)
         os.makedirs(current_dir_path + "¥¥images")
     else:
         validate_fps(current_dir_path + '/' + csv_file_name, fps)
@@ -136,7 +136,7 @@ def create_heatmap_images(csv_file_name, fps, window_size):
     count = 0
     time = 0
     if os.name == 'nt':
-        csv_file = open(current_dir_path + '¥¥' + csv_file_name, 'rb')
+        csv_file = open(current_dir_path + "¥¥" + csv_file_name, 'rb')
     else:
         csv_file = open(current_dir_path + '/' + csv_file_name, 'rb')
     csv_reader = csv.reader(csv_file)
@@ -150,7 +150,7 @@ def create_heatmap_images(csv_file_name, fps, window_size):
 
     # ヒートマップの連番画像を作成
     if os.name == 'nt':
-        csv_file = open(current_dir_path + '¥¥' + csv_file_name, 'rb')
+        csv_file = open(current_dir_path + "¥¥" + csv_file_name, 'rb')
     else:
         csv_file = open(current_dir_path + '/' + csv_file_name, 'rb')
     csv_reader = csv.reader(csv_file)
