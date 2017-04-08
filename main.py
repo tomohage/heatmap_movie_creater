@@ -51,7 +51,6 @@ def resize_image(image, height, width):
 
 if __name__ == "__main__":
     args = sys.argv
-    print args
     if len(args) != 6:
         print u"引数を以下のように定義してください"
         print u"1: アイトラッカーの録画CSVファイルのパス"
@@ -73,8 +72,8 @@ if __name__ == "__main__":
     heatmap_creater.create_heatmap_images(recording_csv_path, heatmap_fps, window_size)
     print u"##### FINISH CREATING HEATMAP IMAGE #####"
 
-
-    files = glob.glob("images/*.png")
+    current_dir_path = os.getcwd()
+    files = glob.glob(current_dir_path + '/images/*.png')
     start_file, ext = os.path.splitext(os.path.basename(files[0]))
     end_file, ext = os.path.splitext(os.path.basename(files[-1]))
     span = (float(end_file) - float(start_file)) / len(files)
@@ -96,7 +95,6 @@ if __name__ == "__main__":
 
     # 保存ファイルとフレームレートとサイズの指定
     out = cv2.VideoWriter('no_sound_'+ output_file_name, int(fourcc), fps, (int(width), int(height)))
-
     if movie.isOpened() == True:
         ret, frame = movie.read()
     else:
@@ -141,4 +139,4 @@ if __name__ == "__main__":
     if is_saved_movie_no_sound != '1':
         os.remove('no_sound_' + output_file_name)
 
-    shutil.rmtree('images')
+    shutil.rmtree('images/')
