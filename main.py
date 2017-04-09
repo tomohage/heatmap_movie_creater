@@ -43,48 +43,17 @@ def resize_image(image, height, width):
     # 元々のサイズを取得
     org_height, org_width = image.shape[:2]
     # 大きい方のサイズに合わせて縮小
-    height_ratio = float(height) / org_height
-    width_ratio = float(width) / org_width
     resized = cv2.resize(image, (int(width), int(height)))
-
     return resized
 
-if __name__ == "__main__":
-    args = sys.argv
-    if len(args) != 6:
-        print u"引数を以下のように定義してください"
-        print u"1: アイトラッカーの録画CSVファイルのパス"
-        print u"2: 録画動画のファイルパス"
-        print u"3: ヒートマップ開始の時刻[ms]"
-        print u"4: 出力ファイルの名前"
-        print u"5: 音無し版のファイルも残しておくフラグ(1を指定)"
-        exit()
-    recording_csv_path = str(args[1])
-    recording_movie_path = str(args[2])
-    heatmap_start_ms = int(args[3])
-    output_file_name = str(args[4])
-    is_saved_movie_no_sound = str(args[5])
-
-    # ヒートマップ画像作成
-    heatmap_fps = 5
-    window_size = 10
-    print u"##### START CREATING HEATMAP IMAGE #####"
-    heatmap_creater.create_heatmap_images(recording_csv_path, heatmap_fps, window_size)
-    print u"##### FINISH CREATING HEATMAP IMAGE #####"
-
+def add_heatmap_to_movie(movie_path, heatmap_images_dir_path, output_file_path):
     current_dir_path = os.getcwd()
-    files = glob.glob(current_dir_path + '/images/*.png')
+    files = glob.glob(current_dir_path + '/' + heatmap_images_dir_path + '/*')
     start_file, ext = os.path.splitext(os.path.basename(files[0]))
     end_file, ext = os.path.splitext(os.path.basename(files[-1]))
     span = (float(end_file) - float(start_file)) / len(files)
 
-    # 読み込む
-    cmd = 'ffmpeg -i ' + recording_movie_path + ' -r 30 -ss ' + str(heatmap_start_ms / 1000.0) + ' temp_cut_movie.m4v'
-    os.system(cmd)
-    cmd = 'ffmpeg -i temp_cut_movie.m4v -vn temp_cut_aud.mp4'
-    os.system(cmd)
-
-    movie = cv2.VideoCapture('temp_cut_movie.m4v')
+    movie = cv2.VideoCapture(movie_path)
     fps = int(round(movie.get(cv2.cv.CV_CAP_PROP_FPS), 0))
     width = movie.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
     height = movie.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
@@ -94,7 +63,9 @@ if __name__ == "__main__":
     fourcc = cv2.cv.CV_FOURCC('m', 'p', '4', 'v')
 
     # 保存ファイルとフレームレートとサイズの指定
-    out = cv2.VideoWriter('no_sound_'+ output_file_name, int(fourcc), fps, (int(width), int(height)))
+    no_sound_output_file_name = 'no_sound_' + output_file_name
+    out = cv2.VideoWriter(no_sound_output_file_name, int(fourcc), fps, (int(width), int(height)))
+
     if movie.isOpened() == True:
         ret, frame = movie.read()
     else:
@@ -129,6 +100,46 @@ if __name__ == "__main__":
     cv2.destroyAllWindows()
     print u"##### FINISH CREATING HEATMAP MOVIE #####"
 
+
+if __name__ == "__main__":
+    args = sys.argv
+    print args
+    if len(args) != 8:
+        print u"引数を以下のように定義してください"
+        print u"1: アイトラッカーの録画CSVファイルのパス"
+        print u"2: 録画動画のファイルパス"
+        print u"3: ヒートマップ開始の時刻[ms]"
+        print u"4: ヒートマップのフレームレート[fps](1/fps[s]単位で時系列を生成)"
+        print u"5: ヒートマップ生成のためのの時系列窓サイズ"
+        print u"6: 出力ファイルの名前"
+        print u"7: 音無し版のファイルも残しておくフラグ(1を指定)"
+        exit()
+    recording_csv_path = str(args[1])
+    recording_movie_path = str(args[2])
+    heatmap_start_ms = int(args[3])
+    heatmap_fps = int(args[4])
+    window_size = int(args[5])
+    output_file_name = str(args[6])
+    is_saved_movie_no_sound = str(args[7])
+
+    # ヒートマップ画像作成
+    print u"##### START CREATING HEATMAP IMAGE #####"
+    heatmap_creater.create_heatmap_images(recording_csv_path, heatmap_fps, window_size)
+    print u"##### FINISH CREATING HEATMAP IMAGE #####"
+
+    # ヒートマップ画像合成タイミングまで画像をカット
+    cmd = 'ffmpeg -i ' + recording_movie_path + ' -r 30 -ss ' + str(heatmap_start_ms / 1000.0) + ' temp_cut_movie.m4v'
+    os.system(cmd)
+
+    # カットした動画の音声を抽出
+    cmd = 'ffmpeg -i temp_cut_movie.m4v -vn temp_cut_aud.mp4'
+    os.system(cmd)
+
+    # 動画にヒートマップ
+    add_heatmap_to_movie(movie_path='temp_cut_movie.m4v',
+                         heatmap_images_dir_path='images/',
+                         output_file_path = output_file_name)
+
     # 音声付加
     cmd = 'ffmpeg -i no_sound_' + output_file_name + ' -i temp_cut_aud.mp4 -vsync -1 ' + output_file_name
     os.system(cmd)
@@ -139,4 +150,4 @@ if __name__ == "__main__":
     if is_saved_movie_no_sound != '1':
         os.remove('no_sound_' + output_file_name)
 
-    shutil.rmtree('images/')
+    shutil.rmtree('images')

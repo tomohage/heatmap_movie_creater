@@ -110,16 +110,17 @@ def create_heatmap_movie(csv_file_name, fps, window_size):
     print("finish creating movie file.")
 
 def create_heatmap_images(csv_file_name, fps, window_size):
+    current_dir_path = os.getcwd()
 
-    validate_fps(csv_file_name, fps)
-    os.makedirs("images")
+    validate_fps(current_dir_path + '/' + csv_file_name, fps)
+
+    os.makedirs(current_dir_path + "/images")
+
     # fpsから時系列の時間間隔単位を取得
     unit_time = 1.0 / fps * 1000
 
     print("fps:" + str(fps) + " unit time:" + str(unit_time) + "[ms]")
-    print("create heatmap images")
 
-    file_num = 0
     row_num = 1
     monitor_size = None
     now_time = 0
@@ -129,20 +130,26 @@ def create_heatmap_images(csv_file_name, fps, window_size):
     # ヒートマップを出力するためのlist
     heatmap_pts = []
 
-    count = 0
+    data_count = 0
+
     time = 0
-    csv_file = open(csv_file_name, 'rb')
+    total_heatmap_data_count = 0
+    csv_file = open(current_dir_path + '/' + csv_file_name, 'rb')
     csv_reader = csv.reader(csv_file)
     for row in csv_reader:
         if row_num > _POSITION_DATA_ROW:
-            count += 1
+            data_count += 1
             time = float(row[0])
+            if len(row) >= 4:
+                total_heatmap_data_count += 1
         row_num += 1
-    span = float(time) / float(count)
+    span = float(time) / float(data_count)
     csv_file.close()
 
     # ヒートマップの連番画像を作成
-    csv_file = open(csv_file_name, 'rb')
+    heatmap_data_count = 0
+    percent_count = 0
+    csv_file = open(current_dir_path + '/' + csv_file_name, 'rb')
     csv_reader = csv.reader(csv_file)
     row_num = 1
     status = _TRIGGER_OFF_STATUS
@@ -150,10 +157,14 @@ def create_heatmap_images(csv_file_name, fps, window_size):
         if row_num == _MONITOR_SIZE_ROW:
             monitor_size = [int(float(row[1])), int(float(row[3]))]
         elif row_num > _POSITION_DATA_ROW:
-            file_num += 1
             if len(row) < 4:
                 status = _TRIGGER_OFF_STATUS
                 continue
+            # 全体の何パーセント作成したか出力
+            if heatmap_data_count == int(percent_count * 0.1 * total_heatmap_data_count):
+                print u"%d[%%] (%d/%d)" % ((percent_count * 10), heatmap_data_count, total_heatmap_data_count)
+                percent_count += 1
+            heatmap_data_count += 1
 
             time = float(row[0])
             if now_time > time:
@@ -214,13 +225,11 @@ def create_heatmap_images(csv_file_name, fps, window_size):
                         width = 5
                     )
                 count += 1
-
             del dr
-
-            print(str(now_time) + "[ms] complete")
             # 時系列の時間をファイル名にして画像ファイルを出力
             # ms単位で10桁でファイル名を設定
-            img.save("images/%010d.png" % int(now_time))
+            img.save(current_dir_path + "/images/%010d.png" % int(now_time))
+
         row_num += 1
     csv_file.close()
 
